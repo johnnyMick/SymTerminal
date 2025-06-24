@@ -25,4 +25,38 @@ return [
     '@hotwired/turbo' => [
         'version' => '7.3.0',
     ],
+    '@xterm/xterm' => [
+        'version' => '5.5.0',
+    ],
+    '@xterm/xterm/css/xterm.min.css' => [
+        'version' => '5.5.0',
+        'type' => 'css',
+    ],
+    '@xterm/addon-web-links' => [
+        'version' => '0.11.0',
+    ],
+    '@xterm/addon-fit' => [
+        'version' => '0.10.0',
+    ],
+    '@xterm/addon-attach' => [
+        'version' => '0.11.0',
+    ],
+    '@xterm/addon-clipboard' => [
+        'version' => '0.1.0',
+    ],
+    '@xterm/addon-image' => [
+        'version' => '0.8.0',
+    ],
+    '@xterm/addon-search' => [
+        'version' => '0.15.0',
+    ],
+    '@xterm/addon-serialize' => [
+        'version' => '0.13.0',
+    ],
+    '@xterm/addon-unicode11' => [
+        'version' => '0.8.0',
+    ],
+    '@xterm/addon-webgl' => [
+        'version' => '0.18.0',
+    ],
 ];
