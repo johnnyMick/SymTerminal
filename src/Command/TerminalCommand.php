@@ -12,7 +12,6 @@ class TerminalCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $rawCommand = $input->getArgument('command');
-        
         // Split command into name and arguments
         $parts = preg_split('/\s+/', $rawCommand);
         $command = strtolower(array_shift($parts));
@@ -21,11 +20,15 @@ class TerminalCommand extends Command
         // Add your command logic here
         switch ($command) {
             case 'help':
-                $output->writeln('Available commands: help, clear, status, ls [options]');
+                $output->writeln('Available commands: help, clear, status, sleep, ls [options]');
                 $output->writeln('ls options: -l, -a, -la, -al');
                 break;
             case 'clear':
                 $output->writeln("\033[2J\033[;H");
+                break;
+            case 'sleep':
+                sleep(3);
+                $output->writeln('System slept for 3 seconds.');
                 break;
             case 'status':
                 $output->writeln('System status: OK');

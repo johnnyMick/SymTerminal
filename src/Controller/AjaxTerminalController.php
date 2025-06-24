@@ -14,7 +14,6 @@ class AjaxTerminalController extends AbstractController
     #[Route('/terminal/execute', name: 'terminal_execute', methods: ['POST'])]
     public function execute(Request $request): JsonResponse
     {
-        sleep(1);
         $commandStr = trim($request->request->get('command', ''));
 
         if (empty($commandStr)) {

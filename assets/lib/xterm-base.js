@@ -31,7 +31,7 @@ export const baseTheme = {
 };
 
 // customize as needed (showing addon defaults)
-export const imageAddonCustomOptions = {
+export const baseImageAddonOptions = {
     enableSizeReports: true,    // whether to enable CSI t reports (see below)
     pixelLimit: 16777216,       // max. pixel size of a single image
     sixelSupport: true,         // enable sixel support
@@ -45,14 +45,29 @@ export const imageAddonCustomOptions = {
 };
 
 // https://github.com/xtermjs/xterm.js
-export function initTerminal(nodeElem, baseTheme, imageAddonCustomOptions) {
+export function initTerminal(nodeElem, theme = {}, imageOptions = {}) {
     const $obj = {
-        terminal: new Terminal({
+        _terminal: new Terminal({
             fontFamily: '"Cascadia Code", Menlo, monospace',
-            theme: baseTheme,
+            theme: { ...baseTheme, ...theme },
             cursorBlink: true,
             allowProposedApi: true
         }),
+        setSendCommandFunction: function(callback) {
+            if (typeof callback !== 'function') {
+                throw new Error("callback must be a function!");
+            }
+            this._sendCommandCallback = callback
+        },
+        _sendCommandCallback: function() {
+            throw new Error("setSendCommandFunction callback function have not been set!");
+        },
+        _sendCommand: function(command) {
+            this.writeCommand(command);
+            this._sendCommandCallback(command);
+            this.buffer = '';
+        },
+        buffer: '',
         addons: {
             fitAddon: new FitAddon(),
             searchAddon: new SearchAddon(),
@@ -60,30 +75,62 @@ export function initTerminal(nodeElem, baseTheme, imageAddonCustomOptions) {
             serializeAddon: new SerializeAddon(),
             unicode11Addon: new Unicode11Addon(),
             clipboardAddon: new ClipboardAddon(),
-            imageAddon: new ImageAddon(imageAddonCustomOptions),
-        }
+            imageAddon: new ImageAddon({ ...baseImageAddonOptions, ...imageOptions }),
+        },
+        loadingInterval: null,
+        startLoading: function() {
+            const dots = ['.', '..', '...', '....', '.....'];
+            let index = 0;
+            this.write('\r\x1b[K⌛⏳ Loading'); // Clear line and write "Loading"
+            this.loadingInterval = setInterval(() => {
+                this.write('\r\x1b[K⌛⏳ Loading ' + dots[index % dots.length]); // Update dots
+                index++;
+            }, 150);
+        },
+        stopLoading: function() {
+            if (this.loadingInterval) {
+                clearInterval(this.loadingInterval);
+                this.loadingInterval = null;
+                this.write('\r\x1b[K'); // Clear the loading line
+            }
+        },
+        write: function(data) {
+            this._terminal.write(data);
+        },
+        writeLn: function(data) {
+            this.write(data + '\r\n');
+        },
+        writeCommand: function(command) {
+            this.write('\r\n' + 'Executing: ' + command + '\r\n');
+        },
     };
     // working in the terminal.
-    $obj.terminal.loadAddon($obj.addons.fitAddon);
-    $obj.terminal.loadAddon($obj.addons.imageAddon);
-    $obj.terminal.loadAddon($obj.addons.searchAddon);
-    $obj.terminal.loadAddon($obj.addons.webLinksAddon);
-    $obj.terminal.loadAddon($obj.addons.clipboardAddon);
-    $obj.terminal.loadAddon($obj.addons.serializeAddon);
-    $obj.terminal.loadAddon($obj.addons.unicode11Addon);
-    $obj.terminal.unicode.activeVersion = '11';
+    $obj._terminal.loadAddon($obj.addons.fitAddon);
+    $obj._terminal.loadAddon($obj.addons.imageAddon);
+    $obj._terminal.loadAddon($obj.addons.searchAddon);
+    $obj._terminal.loadAddon($obj.addons.webLinksAddon);
+    $obj._terminal.loadAddon($obj.addons.clipboardAddon);
+    $obj._terminal.loadAddon($obj.addons.serializeAddon);
+    $obj._terminal.loadAddon($obj.addons.unicode11Addon);
+    $obj._terminal.unicode.activeVersion = '11';
     
-    $obj.terminal.open(nodeElem);
+    $obj._terminal.open(nodeElem);
     // $obj.terminal.loadAddon(new WebglAddon());
     $obj.addons.fitAddon.fit();
 
+    $obj._terminal.onData(async data => {
+        if (data === '\r') {
+            $obj._sendCommand($obj.buffer);
+        } else if (data === '\b' || data.charCodeAt(0) === 127) {
+            if ($obj.buffer.length > 0) {
+                $obj.buffer = $terminal2.buffer.slice(0, -1);
+                $obj.write('\b \b');
+            }
+        } else {
+            $obj.buffer += data;
+            $obj.write(data);
+        }
+    });
+
     return $obj;
-}
-
-export function startLoading($terminal) {
-    $terminal.write('\r\x1b[K⌛⏳ Loading...'); // Clear line and write "Loading"
-}
-
-export function stopLoading($terminal) {
-    $terminal.write('\r\x1b[K'); // Clear the loading line
 }
