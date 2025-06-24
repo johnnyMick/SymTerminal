@@ -5,7 +5,7 @@ const $terminal = initTerminal(document.getElementById('terminal1'));
 
 const socket = new WebSocket('ws://localhost:8080');
 
-$terminal.setSendCommandFunction(async data => {
+$terminal.onEnterKeyPress(async data => {
     socket.send(data);
     // start loading text animation
     $terminal.startLoading();

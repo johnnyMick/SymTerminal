@@ -21,7 +21,7 @@ async function sendCommandAjax(command) {
 // https://github.com/xtermjs/xterm.js
 const $terminal2 = initTerminal(document.getElementById('terminal2'));
 
-$terminal2.setSendCommandFunction(async data => {
+$terminal2.onEnterKeyPress(async data => {
     // start loading text animation
     $terminal2.startLoading();
     // send ajax message over http

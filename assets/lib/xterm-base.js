@@ -53,20 +53,6 @@ export function initTerminal(nodeElem, theme = {}, imageOptions = {}) {
             cursorBlink: true,
             allowProposedApi: true
         }),
-        setSendCommandFunction: function(callback) {
-            if (typeof callback !== 'function') {
-                throw new Error("callback must be a function!");
-            }
-            this._sendCommandCallback = callback
-        },
-        _sendCommandCallback: function() {
-            throw new Error("setSendCommandFunction callback function have not been set!");
-        },
-        _sendCommand: function(command) {
-            this.writeCommand(command);
-            this._sendCommandCallback(command);
-            this.buffer = '';
-        },
         buffer: '',
         addons: {
             fitAddon: new FitAddon(),
@@ -103,6 +89,15 @@ export function initTerminal(nodeElem, theme = {}, imageOptions = {}) {
         writeCommand: function(command) {
             this.write('\r\n' + 'Executing: ' + command + '\r\n');
         },
+        _onEnterKeyPress: function() {
+            throw new Error("onEnterKeyPress callback function have not been set!");
+        },
+        onEnterKeyPress: function(callback) {
+            if (typeof callback !== 'function') {
+                throw new Error("callback must be a function!");
+            }
+            this._onEnterKeyPress = callback;
+        },
     };
     // working in the terminal.
     $obj._terminal.loadAddon($obj.addons.fitAddon);
@@ -120,10 +115,12 @@ export function initTerminal(nodeElem, theme = {}, imageOptions = {}) {
 
     $obj._terminal.onData(async data => {
         if (data === '\r') {
-            $obj._sendCommand($obj.buffer);
+            $obj.writeCommand($obj.buffer);
+            $obj._onEnterKeyPress($obj.buffer);
+            $obj.buffer = '';
         } else if (data === '\b' || data.charCodeAt(0) === 127) {
             if ($obj.buffer.length > 0) {
-                $obj.buffer = $terminal2.buffer.slice(0, -1);
+                $obj.buffer = $obj.buffer.slice(0, -1);
                 $obj.write('\b \b');
             }
         } else {
