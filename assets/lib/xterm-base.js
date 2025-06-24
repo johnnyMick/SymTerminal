@@ -89,14 +89,28 @@ export function initTerminal(nodeElem, theme = {}, imageOptions = {}) {
         writeCommand: function(command) {
             this.write('\r\n' + 'Executing: ' + command + '\r\n');
         },
-        _onEnterKeyPress: function() {
-            throw new Error("onEnterKeyPress callback function have not been set!");
+        KeyPressedCallbacks: {
+            '\r': function() {
+                throw new Error("onEnterKeyPress callback function have not been set!");
+            }
         },
-        onEnterKeyPress: function(callback) {
+        onEnterKey: function(callback) {
             if (typeof callback !== 'function') {
                 throw new Error("callback must be a function!");
             }
-            this._onEnterKeyPress = callback;
+            this.KeyPressedCallbacks['\r'] = callback;
+        },
+        onKeyPressed: function(key, callback) {
+            if (typeof callback !== 'function') {
+                throw new Error("callback must be a function!");
+            }
+            if (typeof key === '\r') {
+                throw new Error("key '\r' can not be set here, use onEnterKey instead!");
+            }
+            if (typeof key === '\b') {
+                throw new Error("key '\b' can not be overidden!");
+            }
+            this.KeyPressedCallbacks[key] = callback;
         },
     };
     // working in the terminal.
@@ -116,14 +130,19 @@ export function initTerminal(nodeElem, theme = {}, imageOptions = {}) {
     $obj._terminal.onData(async data => {
         if (data === '\r') {
             $obj.writeCommand($obj.buffer);
-            $obj._onEnterKeyPress($obj.buffer);
+            $obj.KeyPressedCallbacks['\r']($obj.buffer);
             $obj.buffer = '';
-        } else if (data === '\b' || data.charCodeAt(0) === 127) {
+        }
+        else if ($obj.KeyPressedCallbacks[data]) {
+            $obj.KeyPressedCallbacks[data]($obj.buffer);
+        }
+        else if (data === '\b' || data.charCodeAt(0) === 127) {
             if ($obj.buffer.length > 0) {
                 $obj.buffer = $obj.buffer.slice(0, -1);
                 $obj.write('\b \b');
             }
-        } else {
+        } 
+        else {
             $obj.buffer += data;
             $obj.write(data);
         }
