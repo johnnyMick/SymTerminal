@@ -12,7 +12,6 @@ class TerminalCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $rawCommand = $input->getArgument('command');
-        $output->writeln("Executing: $rawCommand");
         
         // Split command into name and arguments
         $parts = preg_split('/\s+/', $rawCommand);

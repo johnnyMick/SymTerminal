@@ -3,9 +3,12 @@
 {% block title %}XTerminal{% endblock %}
 
 {% block body %}
-    <div class="demo">
-        <div id="terminal"></div>
-    <div>
+    <div class="flex h-[95vh] items-center justify-center">
+        <div class="grid grid-cols-2 gap-2 h-160">
+            <div class="terminal rounded-sm p-2" id="terminal"></div>
+            <div class="terminal2 rounded-sm p-2" id="terminal2"></div>
+        </div>
+    </div>
 {% endblock %}
 
 {% block stylesheets %}

@@ -1,16 +1,3 @@
-.demo {
-    width: 1140px;
-    height: 512px;
-    display: flex;
-    justify-content: center;
-}
-
-#terminal {
-    padding: 10px 20px;
-    border-radius: 4px;
-    background-color: #2D2E2C;
-}
-
 /* Styles for xterm.js viewport */
 .xterm .xterm-viewport {
     /* Ensure the viewport takes full available space */

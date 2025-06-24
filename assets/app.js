@@ -6,7 +6,10 @@ import './bootstrap.js';
  * which should already be in your base.html.twig.
  */
 import './styles/app.css';
+import './vendor/@xterm/xterm/css/xterm.min.css';
+import './lib/xterm.css';
 
 console.log('This log comes from assets/app.js - welcome to AssetMapper! 🎉');
 
 import './lib/xterm.js';
+import './lib/xterm-ajax.js';
