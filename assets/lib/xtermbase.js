@@ -112,6 +112,9 @@ export function initTerminal(nodeElem, theme = {}, imageOptions = {}) {
             }
             this.KeyPressedCallbacks[key] = callback;
         },
+        resize: function() {
+            this.addons.fitAddon.fit();
+        }
     };
     // working in the terminal.
     $obj._terminal.loadAddon($obj.addons.fitAddon);
@@ -125,7 +128,6 @@ export function initTerminal(nodeElem, theme = {}, imageOptions = {}) {
     
     $obj._terminal.open(nodeElem);
     // $obj.terminal.loadAddon(new WebglAddon());
-    $obj.addons.fitAddon.fit();
 
     $obj._terminal.onData(async data => {
         if (data === '\r') {
