@@ -1,4 +1,22 @@
-/* Styles for xterm.js viewport */
+
+/* Styles for winbox */
+.winbox.dark-winbox{
+    background: #fff;
+}
+.winbox.dark-winbox .wb-title {
+    color: #000;
+}
+.winbox.dark-winbox .wb-control {
+    filter: invert(1);
+}
+.winbox .wb-body{
+    overflow: hidden;
+}
+.winbox.min {
+    z-index: 99999 !important;
+}
+
+/* Styles for xterm.js scrollbar */
 .xterm .xterm-viewport {
     /* Ensure the viewport takes full available space */
     width: 100%;
@@ -51,13 +69,11 @@
     /* Prevent unwanted selection */
     user-select: none;
 }
-
 /* Animation for smooth thumb appearance */
 @keyframes thumb-appear {
     from { opacity: 0; }
     to { opacity: 1; }
 }
-
 .xterm .xterm-viewport::-webkit-scrollbar-thumb {
     animation: thumb-appear 0.2s ease-in;
 }

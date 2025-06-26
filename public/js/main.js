@@ -1,6 +1,3 @@
-import { initTerminal } from './xtermbase.js';
-import debounce from './underscorejs/debounce.js';
-
 let $terminal1 = null;
 let $terminal2 = null;
 
@@ -62,7 +59,7 @@ document.getElementById('btnTerminal2').addEventListener("click", () => {
                 // start loading text animation
                 $terminal2.startLoading();
                 // send ajax message over http
-                const message = await sendCommandAjax(data);
+                const message = await sendTerminalCommandAjax(data);
                 // stop the loading text animation
                 $terminal2.stopLoading();
                 $terminal2.write(message);
@@ -82,7 +79,7 @@ document.getElementById('btnTerminal2').addEventListener("click", () => {
     });
 });
 
-async function sendCommandAjax(command) {
+async function sendTerminalCommandAjax(command) {
     try {
         const response = await fetch('/terminal/execute', {
             method: 'POST',
