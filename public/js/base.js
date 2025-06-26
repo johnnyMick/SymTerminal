@@ -98,6 +98,7 @@ function initTerminal(nodeElem, theme = {}, imageOptions = {}) {
             fontFamily: '"Cascadia Code", Menlo, monospace',
             theme: { ...baseTheme, ...theme },
             cursorBlink: true,
+            cursorStyle: 'underline',
             allowProposedApi: true
         }),
         buffer: '',
@@ -113,14 +114,18 @@ function initTerminal(nodeElem, theme = {}, imageOptions = {}) {
         loadingInterval: null,
         startLoading: function() {
             // https://www.npmjs.com/package/cli-spinners?activeTab=code
-            const dots = ['.', '..', '...', '....', '.....'];
-            // const dots = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
+            // const dots = ['.', '.', '..', '..', '...', '...', '....', '....'];
+            const dots = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
             // const emojis = ["🕛 ", "🕐 ", "🕑 ", "🕒 ", "🕓 ", "🕔 ", "🕕 ", "🕖 ", "🕗 ", "🕘 ", "🕙 ", "🕚 "];
             // const emojis = ["🔸 ", "🔶 ", "🟠 ", "🟠 ", "🔶 ", "🔹 ", "🔷 ", "🔵 ", "🔵 ", "🔷 "];
             const emojis = ["🌑", "🌒", "🌓", "🌔", "🌕", "🌖",	"🌗", "🌘"];
             let index = 0;
+            this._terminal.options.cursorBlink = false;
+            this._terminal.options.disableStdin = true;
             updateLoading = () => {
-                this.write('\r\x1b[K'+emojis[index % emojis.length]+' Loading ' + dots[index % dots.length]);
+                let emoji = emojis[index % emojis.length];
+                let dot = dots[index % dots.length];
+                this.write('\r\x1b[K' + emoji + ' ' + dot + dot + dot + dot + dot + ' Loading...' );
                 index++;
             };
             updateLoading();
@@ -131,16 +136,19 @@ function initTerminal(nodeElem, theme = {}, imageOptions = {}) {
                 clearInterval(this.loadingInterval);
                 this.loadingInterval = null;
             }
+            this._terminal.options.cursorBlink = true;
+            this._terminal.options.disableStdin = false;
             this.write('\r\x1b[K'); // Clear the loading line
         },
         write: function(data) {
             this._terminal.write(data);
         },
-        writeLn: function(data) {
-            this.write(data + '\r\n');
+        writeln: function(data) {
+            this._terminal.writeln(data);
         },
         writeCommand: function(command) {
-            this.write('\r\n' + 'Executing: ' + command + '\r\n');
+            this.writeln('');
+            this.writeln('Executing: ' + command);
         },
         KeyPressedCallbacks: {
             '\r': function() {
@@ -204,4 +212,42 @@ function initTerminal(nodeElem, theme = {}, imageOptions = {}) {
     });
 
     return $obj;
+}
+// https://nextapps-de.github.io/winbox/ 
+function setTerminalTitle(obj) {
+    obj.setTitle("Terminal [" + obj.id.replace('winbox-', '')+"]");
+}
+function getTerminalNodeElement(obj) {
+    return document.querySelector('#'+obj.id+' .terminal');
+}
+function initWinbox(title, $terminal, oncreateCallback) {
+    new WinBox(title, {
+        class: "dark-winbox",
+        width: 769,
+        height: 710,
+        icon: "img/terminal.png",
+        html: '<div class="terminal bg-[#2D2E2C] w-full h-full p-2"></div>',
+        oncreate: function(options) { 
+            oncreateCallback(this, options)
+        },
+        onresize: debounce((w, h) => {
+            if ($terminal && h > 35) {
+                $terminal.resize();
+            }
+        }, 300),
+        onrestore: function(){
+            this.g.style.transform = null;
+        },
+        onminimize: function(){
+            const tmp = this.g.style.left;
+            this.g.style.transform = 'translateX(calc(100vw - calc(100% + calc(2 * ' + tmp + '))))';
+        },
+        onmove: function(x, y) {
+            if (this.g.style.transform) {
+                console.log(x, y);
+                const tmp = this.g.style.left;
+                this.g.style.transform = 'translateX(calc(100vw - calc(100% + calc(2 * ' + tmp + '))))';
+            }
+        }
+    });
 }
