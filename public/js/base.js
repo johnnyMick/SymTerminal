@@ -108,25 +108,30 @@ function initTerminal(nodeElem, theme = {}, imageOptions = {}) {
             serializeAddon: new SerializeAddon.SerializeAddon(),
             unicode11Addon: new Unicode11Addon.Unicode11Addon(),
             clipboardAddon: new ClipboardAddon.ClipboardAddon(),
-            progressAddon: new ProgressAddon.ProgressAddon(),
             imageAddon: new ImageAddon.ImageAddon({ ...baseImageAddonOptions, ...imageOptions }),
         },
         loadingInterval: null,
         startLoading: function() {
+            // https://www.npmjs.com/package/cli-spinners?activeTab=code
             const dots = ['.', '..', '...', '....', '.....'];
+            // const dots = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
+            // const emojis = ["🕛 ", "🕐 ", "🕑 ", "🕒 ", "🕓 ", "🕔 ", "🕕 ", "🕖 ", "🕗 ", "🕘 ", "🕙 ", "🕚 "];
+            // const emojis = ["🔸 ", "🔶 ", "🟠 ", "🟠 ", "🔶 ", "🔹 ", "🔷 ", "🔵 ", "🔵 ", "🔷 "];
+            const emojis = ["🌑", "🌒", "🌓", "🌔", "🌕", "🌖",	"🌗", "🌘"];
             let index = 0;
-            this.write('\r\x1b[K⌛⏳ Loading'); // Clear line and write "Loading"
-            this.loadingInterval = setInterval(() => {
-                this.write('\r\x1b[K⌛⏳ Loading ' + dots[index % dots.length]); // Update dots
+            updateLoading = () => {
+                this.write('\r\x1b[K'+emojis[index % emojis.length]+' Loading ' + dots[index % dots.length]);
                 index++;
-            }, 150);
+            };
+            updateLoading();
+            this.loadingInterval = setInterval(updateLoading, 100);
         },
         stopLoading: function() {
             if (this.loadingInterval) {
                 clearInterval(this.loadingInterval);
                 this.loadingInterval = null;
-                this.write('\r\x1b[K'); // Clear the loading line
             }
+            this.write('\r\x1b[K'); // Clear the loading line
         },
         write: function(data) {
             this._terminal.write(data);
@@ -172,16 +177,10 @@ function initTerminal(nodeElem, theme = {}, imageOptions = {}) {
     $obj._terminal.loadAddon($obj.addons.clipboardAddon);
     $obj._terminal.loadAddon($obj.addons.serializeAddon);
     $obj._terminal.loadAddon($obj.addons.unicode11Addon);
-    $obj._terminal.loadAddon($obj.addons.progressAddon);
     $obj._terminal.unicode.activeVersion = '11';
     
     $obj._terminal.open(nodeElem);
     $obj._terminal.loadAddon(new WebglAddon.WebglAddon());
-    // progress Addon
-    $obj.addons.progressAddon.onChange(event => {
-        // https://github.com/xtermjs/xterm.js/blob/master/addons/addon-progress/README.md
-        console.log(event);
-    });
 
     $obj._terminal.onData(async data => {
         if (data === '\r') {

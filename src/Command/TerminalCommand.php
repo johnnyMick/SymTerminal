@@ -27,8 +27,8 @@ class TerminalCommand extends Command
                 $output->writeln("\033[2J\033[;H");
                 break;
             case 'sleep':
-                sleep(3);
-                $output->writeln('System slept for 3 seconds.');
+                sleep(5);
+                $output->writeln('System slept for 5 seconds.');
                 break;
             case 'status':
                 $output->writeln('System status: OK');
