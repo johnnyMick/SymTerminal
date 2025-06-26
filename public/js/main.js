@@ -1,6 +1,14 @@
 let $terminal1 = null;
 let $terminal2 = null;
 
+function setTerminalTitle(obj) {
+    obj.setTitle("Terminal [" + obj.id.replace('winbox-', '')+"]");
+}
+
+function getTerminalNodeElement(obj) {
+    return document.querySelector('#'+obj.id+' .terminal');
+}
+
 document.getElementById('btnTerminal1').addEventListener("click", () => {
     // https://nextapps-de.github.io/winbox/ 
     new WinBox("Socket Terminal", {
@@ -8,11 +16,12 @@ document.getElementById('btnTerminal1').addEventListener("click", () => {
         width: 769,
         height: 710,
         icon: "img/terminal.png",
-        html: '<div class="bg-[#2D2E2C] w-full h-full p-2" id="terminal1"></div>',
+        html: '<div class="terminal bg-[#2D2E2C] w-full h-full p-2"></div>',
         oncreate: function(options) {
+            setTerminalTitle(this);
             const socket = new WebSocket('ws://localhost:8080');
             // https://github.com/xtermjs/xterm.js
-            $terminal1 = initTerminal(document.getElementById('terminal1'));
+            $terminal1 = initTerminal(getTerminalNodeElement(this));
             $terminal1.onEnterKey(async data => {
                 socket.send(data);
                 // start loading text animation
@@ -40,21 +49,34 @@ document.getElementById('btnTerminal1').addEventListener("click", () => {
                 $terminal1.resize();
             }
         }, 300),
+        onrestore: function(){
+            this.g.style.transform = null;
+        },
+        onminimize: function(){
+            const tmp = this.g.style.left;
+            this.g.style.transform = 'translateX(calc(100vw - calc(100% + calc(2 * ' + tmp + '))))';
+        },
+        onmove: function(x, y){
+            if(this.g.style.transform) {
+                const tmp = this.g.style.left;
+                this.g.style.transform = 'translateX(calc(100vw - calc(100% + calc(2 * ' + tmp + '))))';
+            }
+        }
     });
 });
 
 document.getElementById('btnTerminal2').addEventListener("click", () => {
     // https://nextapps-de.github.io/winbox/ 
-    new WinBox("Ajax Terminal", {
+    new WinBox("Ajax TerminaL", {
         class: "dark-winbox",
         width: 769,
         height: 710,
         icon: "img/terminal.png",
-        html: '<div class="bg-[#2D2E2C] w-full h-full p-2" id="terminal2"></div>',
+        html: '<div class="terminal bg-[#2D2E2C] w-full h-full p-2"></div>',
         oncreate: function(options) {
-            console.log('oncreate')
+            setTerminalTitle(this);
             // https://github.com/xtermjs/xterm.js
-            $terminal2 = initTerminal(document.getElementById('terminal2'));
+            $terminal2 = initTerminal(getTerminalNodeElement(this));
             $terminal2.onEnterKey(async data => {
                 // start loading text animation
                 $terminal2.startLoading();
@@ -76,6 +98,19 @@ document.getElementById('btnTerminal2').addEventListener("click", () => {
                 $terminal2.resize();
             }
         }, 300),
+        onrestore: function(){
+            this.g.style.transform = null;
+        },
+        onminimize: function(){
+            const tmp = this.g.style.left;
+            this.g.style.transform = 'translateX(calc(100vw - calc(100% + calc(2 * ' + tmp + '))))';
+        },
+        onmove: function(x, y){
+            if(this.g.style.transform) {
+                const tmp = this.g.style.left;
+                this.g.style.transform = 'translateX(calc(100vw - calc(100% + calc(2 * ' + tmp + '))))';
+            }
+        }
     });
 });
 
