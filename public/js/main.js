@@ -50,6 +50,16 @@ document.getElementById('btnTerminal2').addEventListener("click", () => {
         $terminal2.onKeyPressed('\x0B', (data) => {
             alert('Terminal2 Buffer is: '+ data);
         });
+
+        const addon = new CustomLinkdAddon(/#[\d]+/gu, (event, text) => {
+            console.log(event);
+            console.log('CustomLinkdAddon => ' + text);
+
+        });
+        $terminal2._terminal.loadAddon(addon);
+
+        $terminal2.writeln('Check issue \x1b[34m#123\x1b[0m in the terminal.');
+
         $terminal2.writeln('Ajax Terminal ready. Type a command and press Enter.');
         setTimeout(() => $terminal2.resize(), 50);
     };

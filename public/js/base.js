@@ -188,7 +188,7 @@ function initTerminal(nodeElem, theme = {}, imageOptions = {}) {
     $obj._terminal.unicode.activeVersion = '11';
     
     $obj._terminal.open(nodeElem);
-    $obj._terminal.loadAddon(new WebglAddon.WebglAddon());
+    // $obj._terminal.loadAddon(new WebglAddon.WebglAddon());
 
     $obj._terminal.onData(async data => {
         if (data === '\r') {
