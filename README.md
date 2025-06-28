@@ -20,7 +20,7 @@ symfony server:ca:install
 ## Start Server
 1. Start the WebSocket server:
 ```bash
-php bin/websocket.php
+php bin/console websocket:start-server
 ```
 
 2. Start the Symfony server:
