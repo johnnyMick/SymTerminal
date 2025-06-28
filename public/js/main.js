@@ -2,7 +2,7 @@ let $terminal1 = null;
 let $terminal2 = null;
 
 initWinboxTerminal("#btnTerminal1", "Socket TerminaL", function (options) {
-    const socket = new WebSocket('ws://localhost:8080');
+    const socket = initWebSocket();
     // https://github.com/xtermjs/xterm.js
     $terminal1 = initTerminal(options.terminalNode);
     $terminal1.onEnterKey(async data => {
@@ -25,9 +25,53 @@ initWinboxTerminal("#btnTerminal1", "Socket TerminaL", function (options) {
     socket.onclose = () => {
         $terminal1.writeln('Disconnected from terminal server');
     };
+    // WebSocket connection for file upload
+    const ufws = initWebSocket('/upload/file');
+    ufws.onopen = () => console.log('WebSocket for file upload connected');
+    ufws.onerror = (error) => console.error('WebSocket for file upload error:', error);
+    ufws.onclose = () => console.log('WebSocket for file upload closed');
+    const addon = new CustomLinkdAddon(/#[\d]+/gu, (event, text) => {
+        createTerminalFileUploadModal(async (file, loadingModal, removeModal) => {
+            if (!ufws || ufws.readyState !== WebSocket.OPEN) {
+                console.error('WebSocket not connected');
+                return;
+            }
+            if (file) {
+                // Show loader and disable button
+                loadingModal();
+                // Send metadata first
+                const metadata = {
+                    type: 'metadata',
+                    fileName: file.name,
+                    fileSize: file.size
+                };
+                ufws.send(JSON.stringify(metadata));
+                // Read and send file as binary
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    ufws.send(e.target.result); // Send ArrayBuffer
+                };
+                reader.onerror = (e) => {
+                    console.error('Error reading file:', e);
+                    alert('Error while reading file!');
+                    removeModal();
+                };
+                reader.readAsArrayBuffer(file); // Read file as binary
+            } else {
+                alert('No file selected!');
+            }
+            ufws.onmessage = (event) => {  
+                console.log('Server response:', JSON.parse(event.data));
+                removeModal();
+            };
+        });
+    });
+    $terminal1._terminal.loadAddon(addon);
+    // \x1B[4m : underline, \x1B[24m : normal, \x1B[31m : redish text, \x1B[0m : white text
+    $terminal1.writeln('Check issue \x1B[4m\x1B[31m#123\x1B[0m\x1B[24m in the terminal.');
     document.addEventListener('WinBoxTerminalResize', (e) => {
         if(e.detail.from === options.terminalNode.getAttribute('parent')) {
-            $terminal2.resize();
+            $terminal1.resize();
         }
     });
 });

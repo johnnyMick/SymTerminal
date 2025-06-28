@@ -12,12 +12,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ratchetphp/Ratchet.git",
-                "reference": "e5cd54c70e1b0b0c19917a511eaad45910f5f54d"
+                "reference": "2032bb0446967727aeda19b46c572d56d0d23819"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ratchetphp/Ratchet/zipball/e5cd54c70e1b0b0c19917a511eaad45910f5f54d",
-                "reference": "e5cd54c70e1b0b0c19917a511eaad45910f5f54d",
+                "url": "https://api.github.com/repos/ratchetphp/Ratchet/zipball/2032bb0446967727aeda19b46c572d56d0d23819",
+                "reference": "2032bb0446967727aeda19b46c572d56d0d23819",
                 "shasum": ""
             },
             "require": {
@@ -68,7 +68,7 @@
                 "issues": "https://github.com/ratchetphp/Ratchet/issues",
                 "source": "https://github.com/ratchetphp/Ratchet/tree/0.4.x"
             },
-            "time": "2025-05-30T14:36:41+00:00"
+            "time": "2025-06-25T19:52:47+00:00"
         },
         {
             "name": "composer/semver",

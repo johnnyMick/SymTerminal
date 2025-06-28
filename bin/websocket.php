@@ -1,23 +1,18 @@
 <?php
 require dirname(__DIR__).'/vendor/autoload.php';
 
-use Ratchet\Http\HttpServer;
-use Ratchet\WebSocket\WsServer;
-use App\Server\WebSocketServer;
-use Ratchet\Server\IoServer;
+use App\Server\FileUploadServer;
+use App\Server\WebTerminalServer;
+use Ratchet\Server\EchoServer;
 
 $port = 8080;
+$httpHost = 'localhost';
 $address = '0.0.0.0';
 
-$server = IoServer::factory(
-    new HttpServer(
-        new WsServer(
-            new WebSocketServer()
-        )
-    ),
-    $port,
-    $address
-);
-
-echo "WebSocket server running at ws://$address:$port\n";
-$server->run();
+// Run the server application through the WebSocket protocol on port 8080
+$app = new Ratchet\App($httpHost, $port, $address);
+$app->route('/', new WebTerminalServer(), array('*'));
+$app->route('/echo', new EchoServer(), array('*'));
+$app->route('/upload/file', new FileUploadServer, array('*'));
+echo "WebSocket server running at ws://$address:$port binding on domain: $httpHost \n";
+$app->run();
