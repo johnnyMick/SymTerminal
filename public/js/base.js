@@ -224,6 +224,8 @@ function initWinboxTerminal(selector, title, oncreateCallback) {
             class: "dark-winbox",
             width: 769,
             height: 710,
+            x: "center",
+            y: "center",
             icon: "img/terminal.png",
             html: '<div class="terminal bg-[#2D2E2C] w-full h-full p-2"></div>',
             oncreate: function(options) {
