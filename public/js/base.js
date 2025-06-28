@@ -89,8 +89,8 @@ function xtermBaseImageAddonOptions() {
         iipSizeLimit: 20000000      // size limit of a single IIP sequence
     };
 }
-function initWebSocket(uri = '/', address = 'localhost', port = '8080') {
-    const ws = new WebSocket(`ws://${address}:${port}${uri}`);
+function initWebSocket(uri = '/', address = 'localhost', port = '8080', scheme = 'wss') {
+    const ws = new WebSocket(`${scheme}://${address}:${port}${uri}`);
     return ws;
 }
 // https://github.com/xtermjs/xterm.js
