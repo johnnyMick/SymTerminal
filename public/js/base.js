@@ -214,40 +214,91 @@ function initTerminal(nodeElem, theme = {}, imageOptions = {}) {
     return $obj;
 }
 // https://nextapps-de.github.io/winbox/ 
-function setTerminalTitle(obj) {
-    obj.setTitle("Terminal [" + obj.id.replace('winbox-', '')+"]");
-}
-function getTerminalNodeElement(obj) {
-    return document.querySelector('#'+obj.id+' .terminal');
-}
-function initWinbox(title, $terminal, oncreateCallback) {
-    new WinBox(title, {
-        class: "dark-winbox",
-        width: 769,
-        height: 710,
-        icon: "img/terminal.png",
-        html: '<div class="terminal bg-[#2D2E2C] w-full h-full p-2"></div>',
-        oncreate: function(options) { 
-            oncreateCallback(this, options)
-        },
-        onresize: debounce((w, h) => {
-            if ($terminal && h > 35) {
-                $terminal.resize();
-            }
-        }, 300),
-        onrestore: function(){
-            this.g.style.transform = null;
-        },
-        onminimize: function(){
-            const tmp = this.g.style.left;
-            this.g.style.transform = 'translateX(calc(100vw - calc(100% + calc(2 * ' + tmp + '))))';
-        },
-        onmove: function(x, y) {
-            if (this.g.style.transform) {
-                console.log(x, y);
+function initWinboxTerminal(selector, title, oncreateCallback) {
+    document.querySelector(selector).addEventListener("click", () => {
+        new WinBox(title, {
+            class: "dark-winbox",
+            width: 769,
+            height: 710,
+            icon: "img/terminal.png",
+            html: '<div class="terminal bg-[#2D2E2C] w-full h-full p-2"></div>',
+            oncreate: function(options) {
+                const terminalNode = document.querySelector('#'+this.id+' .terminal');
+                terminalNode.setAttribute('parent', selector);
+                options.terminalNode = terminalNode;
+                this.setTitle(title + "[" + this.id.replace('winbox-', '')+"]");
+                oncreateCallback(options);
+            },
+            onresize: debounce((w, h) => {
+                if (h > 35) {
+                    document.dispatchEvent(new CustomEvent('WinBoxTerminalResize', {detail: {from: selector}}));
+                }
+            }, 300),
+            onrestore: function(){
+                this.g.style.transform = null;
+            },
+            onminimize: function(){
                 const tmp = this.g.style.left;
                 this.g.style.transform = 'translateX(calc(100vw - calc(100% + calc(2 * ' + tmp + '))))';
+            },
+            onmove: function(x, y) {
+                if (this.g.style.transform) {
+                    console.log(x, y);
+                    const tmp = this.g.style.left;
+                    this.g.style.transform = 'translateX(calc(100vw - calc(100% + calc(2 * ' + tmp + '))))';
+                }
             }
+        });
+    });
+}
+// Function to create and show the modal
+function createTerminalFileUploadModal(uploadCallback) {
+    // Create modal container
+    const modal = document.createElement('div');
+    modal.id = 'terminalFileModal';
+    modal.className = 'fixed inset-0 bg-black/90 bg-opacity-50 flex items-center justify-center z-[99]';
+
+    // Create modal content
+    modal.innerHTML = `
+    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+        <h2 class="title text-xl font-bold mb-4">Upload a File</h2>
+        <input type="file" id="terminalFileInput" class="mb-4 w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:bg-blue-500 file:text-white hover:file:bg-blue-600">
+        <div class="flex justify-end space-x-2 action-bar">
+            <button id="closeModalBtn" class="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400">Cancel</button>
+            <button id="uploadBtn" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Upload</button>
+        </div>
+    </div>
+    `;
+
+    // Append modal to body
+    document.body.appendChild(modal);
+
+    // Get modal elements
+    const closeModalBtn = modal.querySelector('#closeModalBtn');
+    const uploadBtn = modal.querySelector('#uploadBtn');
+    const fileInput = modal.querySelector('#terminalFileInput');
+
+    // Close modal and remove it from DOM
+    closeModalBtn.addEventListener('click', () => {
+        modal.remove();
+    });
+
+    // Handle file upload and log content
+    uploadBtn.addEventListener('click', () => {
+        const file = fileInput.files[0];
+        if (file) {
+            uploadCallback(file, 
+            () => {
+                modal.querySelector('.title').innerHTML = 'Uploading file.....';
+                fileInput.classList.add('hidden');
+                modal.querySelector('.action-bar').classList.add('hidden');
+
+            }, 
+            () => {
+                modal.remove(); // Remove modal after upload attempt
+            });
+        } else {
+            console.log('No file selected');
         }
     });
 }
