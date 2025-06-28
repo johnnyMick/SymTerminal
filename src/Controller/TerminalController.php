@@ -10,6 +10,8 @@ class TerminalController extends AbstractController
     #[Route('/', name: 'terminal')]
     public function index(): Response
     {
-        return $this->render('terminal/index.html.twig');
+        return $this->render('terminal/index.html.twig', [
+            'jwtToken' => \App\Auth\Jwt::getToken()
+        ]);
     }
 }

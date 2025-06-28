@@ -8,9 +8,12 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class FileUploadController extends AbstractController
 {
+    use  Trait\BearerTokenAuthTrait;
+    
     #[Route('/file/upload', name: 'file_upload', methods: ['POST'])]
     public function uploadAction(Request $request): JsonResponse
     {
+        $token = $this->checkBearerToken($request);
         // Check if a file was uploaded
         if (!$request->files->has('file')) {
             return new JsonResponse(['error' => 'No file uploaded'], 400);

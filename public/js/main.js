@@ -19,6 +19,9 @@ initWinboxTerminal("#btnTerminal1", "Socket TerminaL", function (options) {
         $terminal1.stopLoading();
         $terminal1.write(event.data);
     };
+    socket.onerror = (error) => {
+        console.error('WebSocket for terminal error:', error);
+    }
     socket.onopen = () => {
         $terminal1.writeln('Connected to terminal server via websocket');
     };
@@ -27,10 +30,17 @@ initWinboxTerminal("#btnTerminal1", "Socket TerminaL", function (options) {
     };
     // WebSocket connection for file upload
     const ufws = initWebSocket('/upload/file');
-    ufws.onopen = () => console.log('WebSocket for file upload connected');
-    ufws.onerror = (error) => console.error('WebSocket for file upload error:', error);
-    ufws.onclose = () => console.log('WebSocket for file upload closed');
-    const addon = new CustomLinkdAddon(/#[\d]+/gu, (event, text) => {
+    ufws.onerror = (error) => {
+        console.error('WebSocket for file upload error:', error);
+    }
+    ufws.onclose = () => {
+        $terminal1.writeln('WebSocket for file upload closed');
+    }
+    ufws.onopen = () => {
+        // \x1B[4m : underline, \x1B[24m : normal, \x1B[31m : redish text, \x1B[0m : white text
+        $terminal1.writeln('POC #123, click \x1B[4m\x1B[31mupload-file\x1B[0m\x1B[24m in the terminal.');
+    };
+    const addon = new CustomLinkdAddon(/upload-file/gu, (event, text) => {
         createTerminalFileUploadModal(async (file, loadingModal, removeModal) => {
             if (!ufws || ufws.readyState !== WebSocket.OPEN) {
                 console.error('WebSocket not connected');
@@ -61,14 +71,15 @@ initWinboxTerminal("#btnTerminal1", "Socket TerminaL", function (options) {
                 alert('No file selected!');
             }
             ufws.onmessage = (event) => {  
-                console.log('Server response:', JSON.parse(event.data));
+                const result  = JSON.parse(event.data);
+                $terminal1.writeln(result.message);
+                $terminal1.writeln('file preview: ' + result.fileContentPreview);
                 removeModal();
             };
         });
     });
     $terminal1._terminal.loadAddon(addon);
-    // \x1B[4m : underline, \x1B[24m : normal, \x1B[31m : redish text, \x1B[0m : white text
-    $terminal1.writeln('Check issue \x1B[4m\x1B[31m#123\x1B[0m\x1B[24m in the terminal.');
+    // resize terminal after winbox open
     document.addEventListener('WinBoxTerminalResize', (e) => {
         if(e.detail.from === options.terminalNode.getAttribute('parent')) {
             $terminal1.resize();
@@ -79,6 +90,7 @@ initWinboxTerminal("#btnTerminal1", "Socket TerminaL", function (options) {
 initWinboxTerminal("#btnTerminal2", "Ajax TerminaL",  function (options) {
     // https://github.com/xtermjs/xterm.js
     $terminal2 = initTerminal(options.terminalNode);
+    $terminal2.writeln('Ajax Terminal ready. Type a command and press Enter.');
     $terminal2.onEnterKey(async data => {
         // start loading text animation
         $terminal2.startLoading();
@@ -92,7 +104,7 @@ initWinboxTerminal("#btnTerminal2", "Ajax TerminaL",  function (options) {
     $terminal2.onKeyPressed('\x0B', (data) => {
         alert('Terminal2 Buffer is: '+ data);
     });
-    const addon = new CustomLinkdAddon(/#[\d]+/gu, (event, text) => {
+    const addon = new CustomLinkdAddon(/upload-file/gu, (event, text) => {
         createTerminalFileUploadModal(async (file, loadingModal, removeModal) => {
             const formData = new FormData();
             formData.append('file', file);
@@ -100,11 +112,15 @@ initWinboxTerminal("#btnTerminal2", "Ajax TerminaL",  function (options) {
                 loadingModal();
                 const response = await fetch('/file/upload', {
                     method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer '+ getJwtToken(),
+                    },
                     body: formData
                 });
                 if (response.ok) {
                     const result = await response.json();
-                    console.log('Server response:', result);
+                    $terminal2.writeln(result.message);
+                    $terminal2.writeln('file preview: ' + result.fileContentPreview);
                 } else {
                     console.error('Upload failed:', response.statusText);
                 }
@@ -116,9 +132,8 @@ initWinboxTerminal("#btnTerminal2", "Ajax TerminaL",  function (options) {
     });
     $terminal2._terminal.loadAddon(addon);
     // \x1B[4m : underline, \x1B[24m : normal, \x1B[31m : redish text, \x1B[0m : white text
-    $terminal2.writeln('Check issue \x1B[4m\x1B[31m#123\x1B[0m\x1B[24m in the terminal.');
-
-    $terminal2.writeln('Ajax Terminal ready. Type a command and press Enter.');
+    $terminal2.writeln('POC #123, click \x1B[4m\x1B[31mupload-file\x1B[0m\x1B[24m in the terminal.');
+    // resize terminal after winbox open
     document.addEventListener('WinBoxTerminalResize', (e) => {
         if(e.detail.from === options.terminalNode.getAttribute('parent')) {
             $terminal2.resize();
@@ -128,10 +143,12 @@ initWinboxTerminal("#btnTerminal2", "Ajax TerminaL",  function (options) {
 
 async function sendTerminalCommandAjax(command) {
     try {
+
         const response = await fetch('/terminal/execute', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
+                'Authorization': 'Bearer '+ getJwtToken(),
             },
             body: new URLSearchParams({ command })
         });

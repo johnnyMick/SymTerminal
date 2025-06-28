@@ -6,6 +6,8 @@ use Ratchet\ConnectionInterface;
 
 class FileUploadServer implements MessageComponentInterface
 {
+    use Trait\TokenAuthTrait;
+
     private $clients;
     private $pendingFiles;
 
@@ -17,6 +19,9 @@ class FileUploadServer implements MessageComponentInterface
 
     public function onOpen(ConnectionInterface $conn)
     {
+        if (!$this->hasValidToken($conn)) {
+            return;
+        }
         $this->clients->attach($conn);
         $this->pendingFiles[$conn->resourceId] = null;
         echo "New connection! ({$conn->resourceId})\n";

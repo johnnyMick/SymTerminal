@@ -11,9 +11,12 @@ use Symfony\Component\Console\Output\BufferedOutput;
 
 class AjaxTerminalController extends AbstractController
 {
+    use  Trait\BearerTokenAuthTrait;
+
     #[Route('/terminal/execute', name: 'terminal_execute', methods: ['POST'])]
     public function execute(Request $request): JsonResponse
     {
+        $token = $this->checkBearerToken($request);
         $commandStr = trim($request->request->get('command', ''));
 
         if (empty($commandStr)) {

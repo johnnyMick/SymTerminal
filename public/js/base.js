@@ -74,7 +74,7 @@ function xtermBaseTheme() {
         white: '#F8F8F8',
         brightWhite: '#FFFFFF'
     };
-};
+}
 function xtermBaseImageAddonOptions() {
     return {
         enableSizeReports: true,    // whether to enable CSI t reports (see below)
@@ -90,8 +90,14 @@ function xtermBaseImageAddonOptions() {
     };
 }
 function initWebSocket(uri = '/', address = 'localhost', port = '8080', scheme = 'wss') {
-    const ws = new WebSocket(`${scheme}://${address}:${port}${uri}`);
-    return ws;
+    const token = getJwtToken();
+    return new WebSocket(`${scheme}://${address}:${port}${uri}?token=${token}`);
+}
+function getJwtToken() {
+    console.warn('JWT TOKEN META TOKEN NOT SAFE/SECURE FROM XSS, FOR TESTING PURPOSE ONLY ⚠️⚠️⚠️⚠️⚠️⚠️');
+    console.warn('JWT TOKEN META TOKEN NOT SAFE/SECURE FROM XSS, FOR TESTING PURPOSE ONLY ⚠️⚠️⚠️⚠️⚠️⚠️');
+    console.warn('JWT TOKEN META TOKEN NOT SAFE/SECURE FROM XSS, FOR TESTING PURPOSE ONLY ⚠️⚠️⚠️⚠️⚠️⚠️');
+    return document.querySelector('meta[name="jwt"]').content;
 }
 // https://github.com/xtermjs/xterm.js
 function initTerminal(nodeElem, theme = {}, imageOptions = {}) {

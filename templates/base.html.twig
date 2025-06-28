@@ -27,6 +27,9 @@
         {% block javascripts %}
             {% block importmap %}{{ importmap('app') }}{% endblock %}
         {% endblock %}
+        <!-- NOT SAFE/SECURE FROM XSS, FOR TESTING PURPOSE ONLY -->
+        <meta name="jwt" content="{{ jwtToken }}" />
+        <!-- NOT SAFE/SECURE FROM XSS, FOR TESTING PURPOSE ONLY -->
     </head>
     <body>
         {% block body %}{% endblock %}

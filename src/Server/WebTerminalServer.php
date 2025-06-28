@@ -9,6 +9,8 @@ use Symfony\Component\Console\Application;
 
 class WebTerminalServer implements MessageComponentInterface
 {
+    use Trait\TokenAuthTrait;
+
     private $clients;
     private $application;
 
@@ -21,6 +23,9 @@ class WebTerminalServer implements MessageComponentInterface
 
     public function onOpen(ConnectionInterface $conn)
     {
+        if (!$this->hasValidToken($conn)) {
+            return;
+        }
         $this->clients->attach($conn);
         echo "New connection! ({$conn->resourceId})\n";
     }
